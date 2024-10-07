@@ -54,9 +54,9 @@ class PublicUserApiTests(TestCase):
     def test_password_too_short_error(self):
         """Test an error if the password is too short."""
         payload = {
-        'email': 'test@example.com',
-        'password': 'pw',
-        'name': 'Test name',
+            'email': 'test@example.com',
+            'password': 'pw',
+            'name': 'Test name',
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
@@ -66,6 +66,24 @@ class PublicUserApiTests(TestCase):
         ).exists()
         self.assertFalse(user_exists)
 
+
+    def test_create_token_for_user(self):
+        """Test generates toke for valie credentials."""
+        user_details = {
+            'name': 'Test Name',
+            'email': 'test@exaple.com',
+            'password': 'test-user-password123',
+        }
+        create_user(**user_details)
+
+        payload = {
+            'email': user_details['email'],
+            'password': user_details['password'],
+        }
+        res = self.cliet.post(TOKEN_URL, payload)
+
+        self.assertIn('token', res.data)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_bad_credentials(self):
         """Test returns if credentials invalid."""
@@ -79,7 +97,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_email_not_found(self):
         """Test error returned if user not found for given email."""
-        payload = {'email': 'test@exaple.com', 'password': 'pass123'}
+        payload = {'email': 'test@example.com', 'password': 'pass123'}
         res = self.client.post(TOKEN_URL, payload)
 
         self.assertNotIn('token', res.data)
@@ -132,9 +150,9 @@ class PrivateUserApiTests(TestCase):
         """Test updating the user profile for the authenticated user."""
         payload = {'name': 'Updated name', 'password': 'newpassword123'}
 
-        res = self.client.path(ME_URL, payload)
+        res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
         self.assertEqual(self.user.name, payload['name'])
-        self.assertTrue(self.user.check_password([ayload['password']]))
+        self.assertTrue(self.user.check_password([payload['password']]))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
